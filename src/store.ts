@@ -1,4 +1,5 @@
 import { configureStore } from '@reduxjs/toolkit'
+import { rtkQueryErrorLogger } from 'middleware'
 import { blogApi } from 'pages/blog/blog.service'
 import blogReducer from 'pages/blog/blog.slice'
 // ...
@@ -10,7 +11,7 @@ export const store = configureStore({
   },
   // Them api middleware de enable cac tinh nang nhu catching, invalidation, polling cua rtk-query
   middleware(getDefaultMiddleware) {
-    return getDefaultMiddleware().concat(blogApi.middleware)
+    return getDefaultMiddleware().concat(blogApi.middleware, rtkQueryErrorLogger)
   }
 })
 

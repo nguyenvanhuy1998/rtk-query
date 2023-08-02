@@ -1,5 +1,6 @@
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react'
 import { Post } from 'types/blog.type'
+import { CustomError } from 'utils/helpers'
 
 export const blogApi = createApi({
   reducerPath: 'blogApi', // Tên field trong Redux state
@@ -36,16 +37,20 @@ export const blogApi = createApi({
     // Post là response trả về và Omit<Post, 'id'> là body gửi lên
     addPost: build.mutation<Post, Omit<Post, 'id'>>({
       query(body) {
-        return {
-          url: 'posts',
-          method: 'POST',
-          body
+        try {
+          return {
+            url: 'posts',
+            method: 'POST',
+            body
+          }
+        } catch (error: any) {
+          throw new CustomError(error.message)
         }
       },
       // invalidatedTags cung cấp các tag để báo hiệu cho những method nào có providesTags
       // match với nó sẽ bị gọi lại
       // Trong trường hợp này getPosts sẽ chạy lại
-      invalidatesTags: (result, error, body) => [{ type: 'Posts', id: 'LIST' }]
+      invalidatesTags: (result, error, body) => (error ? [] : [{ type: 'Posts', id: 'LIST' }])
     }),
     getPost: build.query<Post, string>({
       query: (id) => `posts/${id}`
@@ -59,7 +64,7 @@ export const blogApi = createApi({
         }
       },
       // Trong trường hợp này getPosts sẽ chạy lại
-      invalidatesTags: (result, error, data) => [{ type: 'Posts', id: data.id }]
+      invalidatesTags: (result, error, data) => (error ? [] : [{ type: 'Posts', id: data.id }])
     }),
     deletePost: build.mutation<{}, string>({
       query(id) {
@@ -70,7 +75,7 @@ export const blogApi = createApi({
       },
       // Trong trường hợp này getPosts sẽ chạy lại
 
-      invalidatesTags: (result, error, id) => [{ type: 'Posts', id }]
+      invalidatesTags: (result, error, id) => (error ? [] : [{ type: 'Posts', id }])
     })
   })
 })
